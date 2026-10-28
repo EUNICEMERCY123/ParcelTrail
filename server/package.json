@@ -1,0 +1,17 @@
+{
+  "name": "parceltrail-server",
+  "version": "1.0.0",
+  "description": "ParcelTrail backend with Express and Mongoose (Module 6)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "seed": "node seed.js",
+    "show-data": "node tools/show-data.js",
+    "test": "node tests/test-rules.js && node tests/test-api.js && node tests/test-records-api.js && node tests/test-track-api.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "mongoose": "^8.3.1"
+  }
+}

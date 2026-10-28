@@ -1,0 +1,44 @@
+/* Management records, audit tables, and custody reporting styles (Module 1 CSS3 & Module 4) */
+.overview-strip { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 24px; }
+.overview-card {
+  flex: 1 1 180px; background-color: #ffffff; border: 1px solid var(--line);
+  border-radius: 20px; padding: 20px; box-shadow: var(--shadow-sm);
+}
+.overview-num {
+  font-family: var(--font-display); font-size: 32px !important; font-weight: 700;
+  color: var(--teal); line-height: 1.1;
+}
+.overview-lbl { font-size: 13px; color: var(--muted); margin-top: 4px; font-weight: 500; }
+
+.nav-pills .nav-link {
+  border-radius: 999px !important; padding: 8px 22px !important; font-size: 14px !important;
+  font-weight: 600 !important; transition: all 0.15s ease !important;
+}
+.nav-pills .nav-link.active {
+  background-color: var(--teal) !important; color: #ffffff !important;
+  box-shadow: 0 4px 14px rgba(15, 107, 92, 0.25) !important;
+}
+.nav-pills .nav-link:not(.active) {
+  background-color: #ffffff !important; border: 1px solid var(--line) !important;
+  color: var(--muted) !important;
+}
+.nav-pills .nav-link:not(.active):hover {
+  background-color: var(--teal-soft) !important; color: var(--teal) !important;
+}
+
+.filter-row { display: flex; flex-wrap: wrap; gap: 10px !important; align-items: center; margin-bottom: 16px; }
+.filter-row input, .filter-row select { height: 44px !important; border-radius: 14px !important; border: 1px solid var(--line) !important; }
+
+.table-responsive {
+  background-color: #ffffff; border: 1px solid var(--line); border-radius: 20px;
+  overflow-x: auto; width: 100%; box-shadow: var(--shadow-sm);
+}
+.table { width: 100% !important; font-size: 14px !important; margin-bottom: 0; }
+.table thead th, .table-light th, .records-table th {
+  background-color: #f7faf9 !important; color: var(--muted); font-weight: 600;
+  font-size: 13px; padding: 14px 16px; border-bottom: 1px solid var(--line) !important;
+}
+.table tbody td, .records-table td { padding: 14px 16px; font-size: 14px; color: var(--ink); border-bottom: 1px solid var(--line); }
+.table tbody tr:hover, .records-table tr:hover { background-color: #f9fbfb; }
+
+.pagination-bar { display: flex; align-items: center; justify-content: space-between; margin-top: 16px; font-size: 13px; color: var(--muted); }

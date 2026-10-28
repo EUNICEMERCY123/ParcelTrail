@@ -1,0 +1,131 @@
+{
+  "parcels": [
+    {
+      "parcelId": "PRCL-101",
+      "id": "PRCL-101",
+      "trackingNumber": "TRK-98234-IN",
+      "itemDescription": "Phone Cover",
+      "sender": "ShopKart",
+      "status": "Expected",
+      "isTampered": false,
+      "photoUrl": "/assets/camera-placeholder.svg",
+      "currentLocation": "Mailbox",
+      "events": [],
+      "pickupPass": null,
+      "reports": []
+    },
+    {
+      "parcelId": "PRCL-102",
+      "id": "PRCL-102",
+      "trackingNumber": "TRK-54129-IN",
+      "itemDescription": "Notebook Set",
+      "sender": "BookBarn",
+      "status": "Deposited",
+      "isTampered": false,
+      "photoUrl": "/assets/camera-placeholder.svg",
+      "currentLocation": "Mailbox",
+      "events": [
+        {
+          "id": "EVT-102-1",
+          "timestamp": "2026-10-27T09:15:00.000Z",
+          "eventType": "Parcel Deposited",
+          "sensorType": "Ultrasonic Sensor",
+          "description": "Parcel placed inside mailbox. Distance reading changed from 45cm to 12cm.",
+          "isSimulated": true
+        },
+        {
+          "id": "EVT-102-2",
+          "timestamp": "2026-10-27T09:16:00.000Z",
+          "eventType": "Lid Locked",
+          "sensorType": "Servo Motor Lock",
+          "description": "Lid closed and solenoid latch locked securely.",
+          "isSimulated": true
+        }
+      ],
+      "pickupPass": null,
+      "reports": []
+    },
+    {
+      "parcelId": "PRCL-103",
+      "id": "PRCL-103",
+      "trackingNumber": "TRK-33871-IN",
+      "itemDescription": "Headphones",
+      "sender": "SoundHub",
+      "status": "Collected",
+      "isTampered": false,
+      "photoUrl": "/assets/camera-placeholder.svg",
+      "currentLocation": "Mailbox",
+      "events": [
+        {
+          "id": "EVT-103-1",
+          "timestamp": "2026-10-26T14:00:00.000Z",
+          "eventType": "Parcel Deposited",
+          "sensorType": "Ultrasonic Sensor",
+          "description": "Parcel placed inside mailbox compartment.",
+          "isSimulated": true
+        },
+        {
+          "id": "EVT-103-2",
+          "timestamp": "2026-10-26T14:01:00.000Z",
+          "eventType": "Lid Locked",
+          "sensorType": "Servo Motor Lock",
+          "description": "Lid locked by servo motor.",
+          "isSimulated": true
+        },
+        {
+          "id": "EVT-103-3",
+          "timestamp": "2026-10-26T15:10:00.000Z",
+          "eventType": "Pickup Pass Issued",
+          "sensorType": "Security Subsystem",
+          "description": "One-time pass issued to Rahul (valid 45 mins).",
+          "isSimulated": true
+        },
+        {
+          "id": "EVT-103-4",
+          "timestamp": "2026-10-26T15:25:00.000Z",
+          "eventType": "Parcel Collected",
+          "sensorType": "Keypad Verification",
+          "description": "Collected by Rahul using valid 6-digit OTP code.",
+          "isSimulated": true
+        }
+      ],
+      "pickupPass": null,
+      "reports": []
+    }
+  ],
+  "pickupPoints": [
+    {
+      "pointId": "PT-01",
+      "id": "PT-01",
+      "name": "Karunya Nagar Main Gatehouse",
+      "address": "Security Post 1, Karunya Nagar, Coimbatore - 641114",
+      "distance": "50m from Smart Mailbox",
+      "lat": 10.9365,
+      "lon": 76.7442,
+      "bbox": "76.7400,10.9330,76.7480,10.9400"
+    },
+    {
+      "pointId": "PT-02",
+      "id": "PT-02",
+      "name": "Staff Quarters (Flat 204, Block B)",
+      "address": "Faculty Residences, Karunya Campus, Coimbatore",
+      "distance": "120m across the courtyard",
+      "lat": 10.938,
+      "lon": 76.746,
+      "bbox": "76.7420,10.9345,76.7500,10.9415"
+    },
+    {
+      "pointId": "PT-03",
+      "id": "PT-03",
+      "name": "Campus Convenience Store",
+      "address": "Shop #2, Shopping Complex, Karunya Nagar",
+      "distance": "250m near student center",
+      "lat": 10.935,
+      "lon": 76.7425,
+      "bbox": "76.7385,10.9315,76.7465,10.9385"
+    }
+  ],
+  "mailbox": {
+    "flashOn": false
+  }
+}

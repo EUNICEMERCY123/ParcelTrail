@@ -1,0 +1,149 @@
+<!-- Standalone Help and Mailbox Guide Page (Module 1 HTML5 & Module 3 jQuery) -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Help - ParcelTrail (Module 3 jQuery)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/css/help.css">
+</head>
+<body>
+  <header class="top-bar">
+    <div class="top-bar-left">
+      <a href="/" class="brand-logo">
+        <div class="brand-icon-box">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+            <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+            <line x1="12" y1="22.08" x2="12" y2="12"></line>
+          </svg>
+        </div>
+        <div style="display: flex; flex-direction: column; line-height: 1.15;">
+          <span class="brand-name">ParcelTrail</span>
+          <span class="brand-sub">Smart mailbox, secure parcels</span>
+        </div>
+      </a>
+    </div>
+    <nav class="top-bar-right">
+      <ul class="nav-links-list">
+        <li><a href="/" class="nav-link">Home</a></li>
+        <li><a href="/my-parcels" class="nav-link">My parcels</a></li>
+        <li><a href="/records" class="nav-link">Records</a></li>
+        <li><a href="/pickup-points" class="nav-link">Pickup spots</a></li>
+        <li><a href="/track.html" class="nav-link">Track</a></li>
+        <li><a href="/help.html" class="nav-link active">Help</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main class="help-container">
+    <div style="margin-bottom: 24px;">
+      <span class="eyebrow-badge">Help & Guide</span>
+      <h1 class="card-title" style="font-size: 28px;">How to track and collect your <em>parcel.</em></h1>
+      <span class="card-subtitle">Try it below. This is practice only; no real parcel is touched.</span>
+    </div>
+
+    <div class="help-grid-2col">
+      <!-- LEFT CARD: Practice it -->
+      <div class="pt-card">
+        <h2 class="card-title">Practice <em>it.</em></h2>
+        <span class="card-subtitle">Step-by-step interactive demonstration</span>
+        <ul class="practice-steps-strip">
+          <li class="practice-step-item active" data-step="1">1 Track it</li>
+          <li class="practice-step-item" data-step="2">2 Get a code</li>
+          <li class="practice-step-item" data-step="3">3 Collect it</li>
+        </ul>
+
+        <div id="practice-step-1" class="practice-panel">
+          <div style="font-weight: 600; font-size: 15px;">Phone Cover</div>
+          <div class="practice-sub">From ShopKart</div>
+          <div class="practice-track-row">
+            <div id="track-node-1" class="practice-track-node active">1</div>
+            <div id="track-line-1" class="track-line"></div>
+            <div id="track-node-2" class="practice-track-node">2</div>
+            <div id="track-line-2" class="track-line"></div>
+            <div id="track-node-3" class="practice-track-node">3</div>
+            <div id="track-line-3" class="track-line"></div>
+            <div id="track-node-4" class="practice-track-node">4</div>
+          </div>
+          <div id="practice-sentence" class="practice-sub">It's on its way to your mailbox.</div>
+          <div style="display: flex; gap: 8px;">
+            <button id="btn-practice-drop" class="btn-outline-green">Courier drops the parcel</button>
+            <button id="btn-practice-lock" disabled class="btn-solid-green">Lock the mailbox</button>
+          </div>
+        </div>
+
+        <div id="practice-step-2" class="practice-panel" style="display: none;">
+          <div style="font-weight: 600; font-size: 15px;">Pickup Pass</div>
+          <div class="practice-sub">Code valid for one collection attempt</div>
+          <div id="practice-code-display" class="code-keypad-box mb-3">482910</div>
+          <button id="btn-practice-ready" class="btn-solid-green">Go to collection</button>
+        </div>
+
+        <div id="practice-step-3" class="practice-panel" style="display: none;">
+          <div style="font-weight: 600; font-size: 15px;">Mailbox Door Lock</div>
+          <div class="practice-sub">Enter the 6-digit code on the smart keypad</div>
+          <input type="text" id="practice-keypad" maxlength="6" class="code-keypad-box mb-3" placeholder="------" />
+          <div style="display: flex; gap: 8px;">
+            <button id="btn-practice-unlock" class="btn-solid-green">Unlock door</button>
+            <button id="btn-practice-reset" class="btn-outline-green">Start over</button>
+          </div>
+          <div id="practice-result" class="practice-sub mt-2 text-success fw-semibold"></div>
+        </div>
+      </div>
+
+      <!-- RIGHT CARD: Mailbox explorer -->
+      <div class="pt-card">
+        <h2 class="card-title">Mailbox <em>parts.</em></h2>
+        <span class="card-subtitle">Click the numbered spots to inspect components</span>
+        <div class="mailbox-stage" style="margin: 0 auto 16px;">
+          <img src="/assets/mailbox-base.svg" alt="Mailbox Base" class="stage-base" />
+          <img id="stage-parcel" src="/assets/parcel.svg" alt="Parcel" class="stage-parcel" style="display: block;" />
+          <div id="stage-led" class="stage-led led-green"></div>
+          <div id="stage-alert" class="stage-alert" style="display: none;"></div>
+        </div>
+        <div class="number-btn-row">
+          <button class="number-btn" data-part="door">1</button>
+          <button class="number-btn" data-part="camera">2</button>
+          <button class="number-btn" data-part="sensor">3</button>
+          <button class="number-btn" data-part="shake">4</button>
+        </div>
+        <div id="info-display-box" class="info-display-box">
+          <div style="font-weight: 600; color: var(--ink); margin-bottom: 2px;">Click a numbered spot</div>
+          <div style="color: var(--muted); font-size: 13px;">Explore the sensors and smart locks on the mailbox above.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BOTTOM CARD: How to collect in 3 steps -->
+    <div class="card shadow-sm border p-4 bg-white rounded-4 mt-4 collect-steps-card">
+      <h2 class="h5 fw-bold text-dark mb-3" style="font-family: 'Fraunces', serif;">How to collect your parcel in 3 steps</h2>
+      <div class="row g-3">
+        <div class="col-md-4">
+          <div class="p-3 bg-light rounded-4 border h-100">
+            <p class="mb-0 text-secondary small">1 Open My parcels and press Let someone collect it.</p>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="p-3 bg-light rounded-4 border h-100">
+            <p class="mb-0 text-secondary small">2 Type who is collecting and create the code.</p>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="p-3 bg-light rounded-4 border h-100">
+            <p class="mb-0 text-secondary small">3 Type the code on the keypad and take your parcel.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="/js/jquery.min.js"></script>
+  <script src="/js/help-parts.js"></script>
+  <script src="/js/help-practice.js"></script>
+</body>
+</html>

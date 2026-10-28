@@ -1,0 +1,21 @@
+# Dependencies
+node_modules
+client/node_modules
+server/node_modules
+
+# Build artifacts
+dist
+client/dist
+
+# Environment variables
+.env
+*.env
+
+# Runtime logs
+*.log
+server/logs/
+
+# Test output and screenshots
+client/tests/screenshots/
+tests/screenshots/
+.DS_Store

@@ -1,0 +1,56 @@
+/* Parcel journey strip and live map indicator styles (Module 1 CSS3 & Module 4 React) */
+
+.journey-strip-card {
+  position: relative; width: 100%; box-sizing: border-box;
+  background: #ffffff; border: 1px solid var(--line); border-radius: 20px;
+  padding: 14px 20px; margin-top: 12px;
+  box-shadow: var(--shadow-sm); pointer-events: auto; min-height: 86px;
+}
+.journey-strip-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.journey-label { font-family: var(--font-display); font-size: 13px; font-weight: 600; color: var(--ink); }
+.journey-tag { font-size: 11px; font-weight: 600; color: var(--muted); background: var(--bg); padding: 2px 8px; border-radius: 999px; border: 1px solid var(--line); }
+
+.journey-track-area { position: relative; width: 100%; height: 38px; display: flex; flex-direction: column; justify-content: center; }
+.journey-track-line-bg { position: absolute; top: 8px; left: 0; right: 0; height: 3px; background: #e2e8e5; border-radius: 999px; }
+.journey-track-line-fill {
+  position: absolute; top: 8px; left: 0; height: 3px; background: var(--teal);
+  border-radius: 999px; transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.journey-track-line-fill.dashed-active {
+  background: repeating-linear-gradient(90deg, var(--teal), var(--teal) 6px, transparent 6px, transparent 10px);
+}
+
+.journey-dot {
+  position: absolute; top: 1px; width: 18px; height: 18px; border-radius: 50%;
+  background: var(--teal); border: 2px solid #ffffff; box-shadow: 0 2px 6px rgba(15, 107, 92, 0.35);
+  display: flex; align-items: center; justify-content: center; transform: translateX(-50%);
+  transition: left 0.8s cubic-bezier(0.4, 0, 0.2, 1); z-index: 3;
+}
+@keyframes hubToMailbox { 0%, 100% { transform: translateX(-50%); } 50% { transform: translateX(calc(-50% + 14px)); } }
+.journey-dot.dot-in-transit { animation: hubToMailbox 3s ease-in-out infinite; }
+@keyframes pulseRing { 0% { box-shadow: 0 0 0 0 rgba(15, 107, 92, 0.4); } 70% { box-shadow: 0 0 0 8px rgba(15, 107, 92, 0); } 100% { box-shadow: 0 0 0 0 rgba(15, 107, 92, 0); } }
+.journey-dot.dot-mailbox { animation: pulseRing 2s infinite; }
+
+.journey-stops-row { display: flex; justify-content: space-between; position: relative; margin-top: 14px; }
+.journey-stop-node { display: flex; flex-direction: column; align-items: center; gap: 2px; position: relative; }
+.stop-dot { width: 7px; height: 7px; border-radius: 50%; background: #c2cdc8; position: absolute; top: -16px; border: 1.5px solid #ffffff; }
+.journey-stop-node.completed .stop-dot { background: var(--teal); }
+.stop-text { font-size: 11px; color: var(--muted); font-weight: 500; white-space: nowrap; }
+.journey-stop-node.completed .stop-text { color: var(--ink); font-weight: 600; }
+
+.map-live-indicator {
+  position: absolute; top: 16px; left: 16px; z-index: 5; background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(8px); border: 1px solid var(--line); border-radius: 999px;
+  padding: 5px 12px; display: flex; align-items: center; gap: 6px; box-shadow: var(--shadow-sm);
+  font-size: 11px; font-weight: 600; color: var(--teal); pointer-events: none;
+}
+.live-pulse-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--teal); position: relative; }
+.live-pulse-dot::after {
+  content: ''; position: absolute; top: -2px; left: -2px; right: -2px; bottom: -2px;
+  border-radius: 50%; border: 1.5px solid var(--teal); animation: liveRing 1.8s cubic-bezier(0.24, 0, 0.38, 1) infinite;
+}
+@keyframes liveRing { 0% { transform: scale(1); opacity: 0.9; } 100% { transform: scale(2.4); opacity: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .journey-dot, .journey-track-line-fill, .live-pulse-dot::after { animation: none !important; transition: none !important; }
+}
