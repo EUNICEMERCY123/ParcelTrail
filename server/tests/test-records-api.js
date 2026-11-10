@@ -1,10 +1,12 @@
 // Integration tests for Records API and pass management (Module 5 & 6)
+process.env.NODE_ENV = 'test';
 const assert = require('assert');
 const app = require('../server');
 const { computePassState } = require('../utils/passState');
 
 async function runRecordsTests() {
   console.log('--- Running Records API Integration Tests ---');
+  await app.dbReady;
   const server = app.listen(0);
   const baseUrl = `http://127.0.0.1:${server.address().port}/api`;
 

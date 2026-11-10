@@ -22,7 +22,7 @@ export default function PassesTab({ onDataChanged }) {
       const data = await fetchRecordsPasses(stateFilter ? { state: stateFilter } : {});
       setPasses(data);
     } catch {
-      setError('Cannot reach the server. Start it with npm run dev inside the server folder.');
+      setError('Cannot reach the backend server. Please verify the API server is running.');
     } finally { setLoading(false); }
   };
 

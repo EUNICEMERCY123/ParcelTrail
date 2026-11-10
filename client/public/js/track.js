@@ -50,7 +50,7 @@ function createEventItem(ev) {
   const li = document.createElement('li');
   li.className = 'list-group-item d-flex justify-content-between align-items-center small';
   const title = document.createElement('span');
-  title.textContent = ev.eventType + ' (Simulated)';
+  title.textContent = ev.isSimulated === false ? ev.eventType : ev.eventType + ' (Simulated)';
   title.className = 'fw-semibold text-dark';
   const time = document.createElement('span');
   const d = new Date(ev.timestamp);
@@ -102,15 +102,22 @@ async function searchTracking(num) {
     renderRecentChips();
     renderTrackingCard(data);
   } catch (err) {
-    showAlert('Cannot reach the server. Start it with npm run dev inside the server folder.', 'danger');
+    showAlert('Cannot reach the tracking server. Please verify the backend API is running.', 'danger');
   }
 }
 
-// Initialise form and search events
+// Initialise form, URL query auto-lookup, and search events
 document.addEventListener('DOMContentLoaded', () => {
   renderRecentChips();
   document.getElementById('track-form').addEventListener('submit', (e) => {
     e.preventDefault();
     searchTracking(document.getElementById('tracking-input').value.trim());
   });
+
+  const params = new URLSearchParams(window.location.search);
+  const initialQuery = (params.get('tracking') || params.get('id') || params.get('q') || '').trim();
+  if (initialQuery) {
+    document.getElementById('tracking-input').value = initialQuery;
+    searchTracking(initialQuery);
+  }
 });

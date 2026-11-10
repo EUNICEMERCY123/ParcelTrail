@@ -1,10 +1,12 @@
 // Automated integration tests for parcel tracking endpoint (Module 5 & 6)
+process.env.NODE_ENV = 'test';
 const assert = require('assert');
 const app = require('../server');
 
 // Runs integration tests for GET /api/track/:trackingNumber
 async function runTrackApiTests() {
   console.log('--- Running Track API Integration Tests ---');
+  await app.dbReady;
   const server = app.listen(0);
   const baseUrl = `http://127.0.0.1:${server.address().port}/api`;
   let passed = 0;

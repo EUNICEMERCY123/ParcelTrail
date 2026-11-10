@@ -1,9 +1,10 @@
 // MongoDB Query & CRUD Demonstration Script (Module 5 Syllabus)
 // Operates on sandbox database: parcelTrailDemo
 const mongoose = require('mongoose');
+const { withDatabaseName } = require('../db');
 
 async function runMongoDemo() {
-  const uri = 'mongodb://127.0.0.1:27017/parcelTrailDemo';
+  const uri = withDatabaseName(process.env.MONGODB_URI, 'parcelTrailDemo');
   await mongoose.connect(uri);
   console.log('--- Connected to parcelTrailDemo for MongoDB Syllabus Demo ---');
   const db = mongoose.connection.db;

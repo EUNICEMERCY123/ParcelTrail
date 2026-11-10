@@ -93,7 +93,15 @@ export default function MyParcelsPage() {
         onToggleAddForm={setShowAddForm}
         onAddParcel={async (d) => { const c = await createParcel(d); setParcels([c, ...parcels]); setSelectedId(c.parcelId || c.id); setShowAddForm(false); }}
         activeStatus={activeParcel ? activeParcel.status : 'Expected'}
-        onReset={async () => { const r = await resetParcels(); const list = r.parcels || []; setParcels(list); if (list.length > 0) setSelectedId(list[0].parcelId || list[0].id); }}
+        onReset={async () => {
+          setActionError('');
+          try {
+            const r = await resetParcels();
+            const list = r.parcels || [];
+            setParcels(list);
+            if (list.length > 0) setSelectedId(list[0].parcelId || list[0].id);
+          } catch (e) { setActionError(e.message); }
+        }}
       />
 
       <main className="map-detail-pane">
@@ -105,7 +113,7 @@ export default function MyParcelsPage() {
       </main>
       {panel && (
         <aside className="slide-panel-container">
-          {panel === 'options' && <OptionsPanel parcel={activeParcel} onClose={() => setPanel(null)} onSimulate={async (t) => handleUpdate(await simulateSensorEvent(activeParcel.parcelId || activeParcel.id, t))} flashOn={flashOn} onToggleFlash={async () => { const f = await toggleFlashStatus(); setFlashOn(f.flashOn); }} onDelete={handleDelete} />}
+          {panel === 'options' && <OptionsPanel parcel={activeParcel} onClose={() => setPanel(null)} onSimulate={async (t) => handleUpdate(await simulateSensorEvent(activeParcel.parcelId || activeParcel.id, t))} onUpdateParcel={handleUpdate} flashOn={flashOn} onToggleFlash={async () => { const f = await toggleFlashStatus(); setFlashOn(f.flashOn); }} onDelete={handleDelete} />}
           {panel === 'history' && <HistoryPanel parcel={activeParcel} onClose={() => setPanel(null)} />}
           {panel === 'pickup' && <PickupPanel parcel={activeParcel} onClose={() => setPanel(null)} onUpdateParcel={handleUpdate} />}
         </aside>

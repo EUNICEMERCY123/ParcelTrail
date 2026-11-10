@@ -11,10 +11,12 @@ router.get('/incidents', async (req, res, next) => {
   try {
     const docs = await Parcel.find({ 'reports.0': { $exists: true } }, 'parcelId itemDescription reports');
     const list = [];
+    const typeFilter = (req.query.type || '').trim().toLowerCase();
+
     docs.forEach((p) => {
       (p.reports || []).forEach((r) => {
         if (req.query.status && r.status !== req.query.status) return;
-        if (req.query.type && r.type !== req.query.type) return;
+        if (typeFilter && !(r.type || '').toLowerCase().includes(typeFilter)) return;
         list.push({
           id: r.id || r._id,
           parcelId: p.parcelId,
@@ -33,37 +35,54 @@ router.get('/incidents', async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
+async function resolveIncidentById(parcelId, reportId, noteText) {
+  const parcel = await findParcelById(parcelId);
+  if (!parcel) return { status: 404, body: { message: 'Parcel not found' } };
+  const report = (parcel.reports || []).find((r) => (r.id || String(r._id)) === reportId);
+  if (!report) return { status: 404, body: { message: 'Report not found' } };
+  if (report.status === 'Resolved') return { status: 400, body: { message: 'Incident already resolved' } };
+
+  report.status = 'Resolved';
+  report.resolvedAt = new Date();
+  report.resolutionNote = (noteText || '').slice(0, 200);
+
+  parcel.events.push({
+    id: `EVT-${Date.now()}`,
+    timestamp: new Date(),
+    eventType: 'Incident resolved',
+    sensorType: 'App',
+    description: report.resolutionNote || 'Incident marked as resolved in custody records.',
+    isSimulated: false
+  });
+
+  await parcel.save();
+  return { status: 200, body: { success: true, parcel, report } };
+}
+
 // POST /incidents/:parcelId/:reportId/resolve
 router.post('/incidents/:parcelId/:reportId/resolve', async (req, res, next) => {
   try {
-    const parcel = await findParcelById(req.params.parcelId);
-    if (!parcel) return res.status(404).json({ message: 'Parcel not found' });
-    const report = (parcel.reports || []).find((r) => (r.id || String(r._id)) === req.params.reportId);
-    if (!report) return res.status(404).json({ message: 'Report not found' });
-    if (report.status === 'Resolved') return res.status(400).json({ message: 'Incident already resolved' });
+    const result = await resolveIncidentById(req.params.parcelId, req.params.reportId, req.body.note ?? req.body.resolutionNote);
+    res.status(result.status).json(result.body);
+  } catch (err) { next(err); }
+});
 
-    report.status = 'Resolved';
-    report.resolvedAt = new Date();
-    report.resolutionNote = (req.body.note || '').slice(0, 200);
-
-    parcel.events.push({
-      id: `EVT-${Date.now()}`,
-      timestamp: new Date(),
-      eventType: 'Incident resolved',
-      sensorType: 'App',
-      description: report.resolutionNote || 'Incident marked as resolved in custody records.',
-      isSimulated: false
-    });
-
-    await parcel.save();
-    res.json({ success: true, parcel, report });
+// POST /resolve (alias supporting body { parcelId, reportId, resolutionNote / note })
+router.post('/resolve', async (req, res, next) => {
+  try {
+    const { parcelId, reportId, note, resolutionNote } = req.body;
+    if (!parcelId || !reportId) {
+      return res.status(400).json({ message: 'parcelId and reportId are required' });
+    }
+    const result = await resolveIncidentById(parcelId, reportId, note ?? resolutionNote);
+    res.status(result.status).json(result.body);
   } catch (err) { next(err); }
 });
 
 // GET /passes
 router.get('/passes', async (req, res, next) => {
   try {
-    const docs = await Parcel.find({ 'pickupPass.code': { $exists: true } }, 'parcelId itemDescription pickupPass createdAt');
+    const docs = await Parcel.find({ 'pickupPass.code': { $type: 'string', $ne: '' } }, 'parcelId itemDescription pickupPass createdAt');
     const list = [];
     docs.forEach((p) => {
       if (!p.pickupPass) return;

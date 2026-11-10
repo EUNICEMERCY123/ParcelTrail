@@ -1,9 +1,11 @@
 // Automated integration tests for ParcelTrail Express API (Module 5 & 6)
+process.env.NODE_ENV = 'test';
 const assert = require('assert');
 const app = require('../server');
 
 async function runApiTests() {
   console.log('--- Running ParcelTrail API Integration Tests ---');
+  await app.dbReady;
   const server = app.listen(0);
   const port = server.address().port;
   const baseUrl = `http://127.0.0.1:${port}/api`;

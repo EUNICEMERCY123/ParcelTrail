@@ -1,6 +1,6 @@
 // Reusable memoized table row for parcel records with inline edit (Module 4 React.memo)
 import React, { useState } from 'react';
-import { STATUS_META, RECORD_STATUS_META } from '../../utils/labels';
+import { STATUS_META } from '../../utils/labels';
 
 const ParcelRecordRow = React.memo(function ParcelRecordRow({ item, onOpen, onSaveEdit, onDelete }) {
   const [isEditing, setIsEditing] = useState(false);
@@ -19,7 +19,7 @@ const ParcelRecordRow = React.memo(function ParcelRecordRow({ item, onOpen, onSa
         <td><input className="form-control form-control-sm" value={form.itemDescription} onChange={(e) => setForm({ ...form, itemDescription: e.target.value })} /></td>
         <td><input className="form-control form-control-sm" value={form.sender} onChange={(e) => setForm({ ...form, sender: e.target.value })} /></td>
         <td><input className="form-control form-control-sm" value={form.trackingNumber} onChange={(e) => setForm({ ...form, trackingNumber: e.target.value })} /></td>
-        <td><span className={`badge status-pill ${statusMeta.pill}`}>{statusMeta.label}</span></td>
+        <td><span className={`badge status-pill pill-${statusMeta.pill}`}>{statusMeta.label}</span></td>
         <td><input type="date" className="form-control form-control-sm" value={form.expectedDate} onChange={(e) => setForm({ ...form, expectedDate: e.target.value })} /></td>
         <td className="small text-muted">{item.createdAt ? new Date(item.createdAt).toLocaleDateString() : '-'}</td>
         <td>
@@ -38,7 +38,7 @@ const ParcelRecordRow = React.memo(function ParcelRecordRow({ item, onOpen, onSa
       <td className="text-secondary">{item.sender}</td>
       <td className="font-monospace small text-muted">{item.trackingNumber || '-'}</td>
       <td>
-        <span className={`badge status-pill ${statusMeta.pill}`}>{statusMeta.label}</span>
+        <span className={`badge status-pill pill-${statusMeta.pill}`}>{statusMeta.label}</span>
       </td>
       <td>
         {item.expectedDate ? new Date(item.expectedDate).toLocaleDateString() : '-'}

@@ -1,6 +1,8 @@
 // Client-side API service connecting React to Express backend (Module 3 Fetch & Module 6)
 
-const API_BASE = '/api';
+const API_BASE = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/+$/, '');
+
+export { API_BASE };
 
 export async function fetchParcels(search = '', status = '') {
   const params = new URLSearchParams();
@@ -13,49 +15,50 @@ export async function fetchParcels(search = '', status = '') {
 }
 
 export async function fetchParcelById(id) {
-  const res = await fetch(`${API_BASE}/parcels/${id}`);
+  const res = await fetch(`${API_BASE}/parcels/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error('Failed to load parcel details');
   return res.json();
 }
 
 export async function createParcel(data) {
   const res = await fetch(`${API_BASE}/parcels`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
-  if (!res.ok) throw new Error((await res.json()).message || 'Failed to create parcel');
+  if (!res.ok) throw new Error((await res.json().catch(() => ({}))).message || 'Failed to create parcel');
   return res.json();
 }
 
 export async function simulateSensorEvent(parcelId, eventType) {
-  const res = await fetch(`${API_BASE}/parcels/${parcelId}/simulate`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ eventType }) });
-  if (!res.ok) throw new Error('Simulation failed on server');
+  const res = await fetch(`${API_BASE}/parcels/${encodeURIComponent(parcelId)}/simulate`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ eventType }) });
+  if (!res.ok) throw new Error((await res.json().catch(() => ({}))).message || 'Simulation failed on server');
   return res.json();
 }
 
 export async function issuePickupPass(parcelId, collectorName, expiryMinutes) {
-  const res = await fetch(`${API_BASE}/parcels/${parcelId}/pass/issue`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ collectorName, expiryMinutes }) });
-  if (!res.ok) throw new Error('Failed to issue pickup pass');
+  const res = await fetch(`${API_BASE}/parcels/${encodeURIComponent(parcelId)}/pass/issue`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ collectorName, expiryMinutes }) });
+  if (!res.ok) throw new Error((await res.json().catch(() => ({}))).message || 'Failed to issue pickup pass');
   return res.json();
 }
 
 export async function verifyPickupPass(parcelId, inputCode) {
-  const res = await fetch(`${API_BASE}/parcels/${parcelId}/pass/verify`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ inputCode }) });
+  const res = await fetch(`${API_BASE}/parcels/${encodeURIComponent(parcelId)}/pass/verify`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ inputCode }) });
+  if (!res.ok) throw new Error((await res.json().catch(() => ({}))).message || 'Failed to verify pickup pass');
   return res.json();
 }
 
 export async function redirectParcel(parcelId, locationName, address) {
-  const res = await fetch(`${API_BASE}/parcels/${parcelId}/redirect`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ locationName, address }) });
-  if (!res.ok) throw new Error('Failed to redirect parcel');
+  const res = await fetch(`${API_BASE}/parcels/${encodeURIComponent(parcelId)}/redirect`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ locationName, address }) });
+  if (!res.ok) throw new Error((await res.json().catch(() => ({}))).message || 'Failed to redirect parcel');
   return res.json();
 }
 
 export async function reportProblem(parcelId, type, description) {
-  const res = await fetch(`${API_BASE}/parcels/${parcelId}/report`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type, description }) });
-  if (!res.ok) throw new Error((await res.json()).message || 'Failed to file report');
+  const res = await fetch(`${API_BASE}/parcels/${encodeURIComponent(parcelId)}/report`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type, description }) });
+  if (!res.ok) throw new Error((await res.json().catch(() => ({}))).message || 'Failed to file report');
   return res.json();
 }
 
 export async function deleteParcel(parcelId) {
-  const res = await fetch(`${API_BASE}/parcels/${parcelId}`, { method: 'DELETE' });
-  if (!res.ok) throw new Error((await res.json()).message || 'Failed to delete parcel');
+  const res = await fetch(`${API_BASE}/parcels/${encodeURIComponent(parcelId)}`, { method: 'DELETE' });
+  if (!res.ok) throw new Error((await res.json().catch(() => ({}))).message || 'Failed to delete parcel');
   return res.json();
 }
 

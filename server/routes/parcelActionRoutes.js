@@ -2,61 +2,117 @@
 const express = require('express');
 const router = express.Router();
 const Parcel = require('../models/Parcel');
+const PickupPoint = require('../models/PickupPoint');
 const findParcelById = require('../utils/findParcel');
 const { dropParcel, lockParcel, takeSnapshot, knockTamper, addReport, redirectParcel } = require('../rules/parcelRules');
 const { issuePass, checkPassCode } = require('../rules/passRules');
+
+const ALLOWED_REPORT_TYPES = [
+  'Missing Parcel',
+  'Damaged Packaging',
+  'Tampered Lock',
+  'Wrong Item',
+  'Other',
+  'Missing parcel',
+  'Damaged',
+  'Suspicious activity'
+];
 
 // POST /api/parcels/:id/simulate (Uses updateOne with $set and $push)
 router.post('/:id/simulate', async (req, res, next) => {
   try {
     const parcel = await findParcelById(req.params.id);
     if (!parcel) return res.status(404).json({ message: 'Parcel not found' });
-    const { eventType } = req.body;
+
+    const rawType = req.body.eventType || req.body.action;
+    const eventType = rawType === 'photo' ? 'snapshot' : rawType;
     const plain = parcel.toObject();
+    const prevCount = (plain.events || []).length;
     let ops = {};
 
-    if (eventType === 'drop') ops = { $set: { status: 'Deposited' }, $push: { events: dropParcel(plain).events.slice(-1)[0] } };
-    else if (eventType === 'lock') ops = { $set: { status: 'Locked' }, $push: { events: lockParcel(plain).events.slice(-1)[0] } };
-    else if (eventType === 'snapshot') ops = { $set: { photoUrl: takeSnapshot(plain).photoUrl }, $push: { events: takeSnapshot(plain).events.slice(-1)[0] } };
-    else if (eventType === 'tamper') ops = { $set: { status: 'Tamper Alert', isTampered: true }, $push: { events: knockTamper(plain).events.slice(-1)[0] } };
-    else return res.status(400).json({ message: `Unknown simulation event: ${eventType}` });
+    if (eventType === 'drop') {
+      if (plain.status !== 'Expected') {
+        return res.status(400).json({ message: `Parcel cannot be dropped while status is '${plain.status}'` });
+      }
+      const next = dropParcel(plain);
+      ops = { $set: { status: 'Deposited' }, $push: { events: next.events[next.events.length - 1] } };
+    } else if (eventType === 'lock') {
+      if (plain.status !== 'Deposited') {
+        return res.status(400).json({ message: `Parcel can only be locked when status is 'Deposited' (currently '${plain.status}')` });
+      }
+      const next = lockParcel(plain);
+      ops = { $set: { status: 'Locked' }, $push: { events: next.events[next.events.length - 1] } };
+    } else if (eventType === 'snapshot') {
+      const next = takeSnapshot(plain);
+      ops = { $set: { photoUrl: next.photoUrl }, $push: { events: next.events[next.events.length - 1] } };
+    } else if (eventType === 'tamper') {
+      const next = knockTamper(plain);
+      if (next.events.length > prevCount) {
+        ops = { $set: { status: 'Tamper Alert', isTampered: true }, $push: { events: next.events[next.events.length - 1] } };
+      }
+    } else {
+      return res.status(400).json({ message: `Unknown simulation event: ${rawType}` });
+    }
 
     await Parcel.updateOne({ _id: parcel._id }, ops);
     res.json(await findParcelById(req.params.id));
   } catch (err) { next(err); }
 });
 
-// POST /api/parcels/:id/pass/issue (Uses updateOne with $set and $push)
-router.post('/:id/pass/issue', async (req, res, next) => {
+async function handleIssuePass(req, res, next) {
   try {
     const parcel = await findParcelById(req.params.id);
     if (!parcel) return res.status(404).json({ message: 'Parcel not found' });
-    const { collectorName, expiryMinutes } = req.body;
-    const resPass = issuePass(parcel.toObject(), collectorName, expiryMinutes || 60);
+    if (parcel.status === 'Collected') {
+      return res.status(400).json({ message: 'Cannot issue a pickup pass for an already collected parcel' });
+    }
 
+    const collectorName = req.body.collectorName;
+    const rawMins = req.body.expiryMinutes ?? req.body.durationMinutes ?? 60;
+    const mins = parseInt(rawMins, 10);
+    if (isNaN(mins) || mins < 1 || mins > 1440) {
+      return res.status(400).json({ message: 'expiryMinutes must be between 1 and 1440' });
+    }
+
+    const resPass = issuePass(parcel.toObject(), collectorName, mins);
     await Parcel.updateOne(
       { _id: parcel._id },
-      { $set: { pickupPass: resPass.pickupPass }, $push: { events: resPass.events.slice(-1)[0] } }
+      { $set: { pickupPass: resPass.pickupPass }, $push: { events: resPass.events[resPass.events.length - 1] } }
     );
     res.json(await findParcelById(req.params.id));
   } catch (err) { next(err); }
-});
+}
+
+// POST /api/parcels/:id/pass/issue and /api/parcels/:id/pass alias
+router.post('/:id/pass/issue', handleIssuePass);
+router.post('/:id/pass', handleIssuePass);
 
 // POST /api/parcels/:id/pass/verify (Uses updateOne with $set, $push, and $inc)
 router.post('/:id/pass/verify', async (req, res, next) => {
   try {
     const parcel = await findParcelById(req.params.id);
     if (!parcel) return res.status(404).json({ message: 'Parcel not found' });
+
     const plain = parcel.toObject();
-    const result = checkPassCode(plain, req.body.inputCode);
+    const submittedCode = req.body.inputCode ?? req.body.code;
+    const result = checkPassCode(plain, submittedCode);
+
+    const prevAttempts = plain.pickupPass ? plain.pickupPass.attemptsRemaining : 0;
+    const nextAttempts = result.parcel && result.parcel.pickupPass ? result.parcel.pickupPass.attemptsRemaining : 0;
 
     if (result.success) {
-      const evt = result.parcel.events.slice(-1)[0];
-      await Parcel.updateOne({ _id: parcel._id }, { $set: { status: 'Collected', isTampered: false, 'pickupPass.isUsed': true }, $push: { events: evt } });
-    } else if (result.parcel.pickupPass.attemptsRemaining === 0 && plain.pickupPass.attemptsRemaining > 0) {
-      const lockEvt = result.parcel.events.slice(-1)[0];
-      await Parcel.updateOne({ _id: parcel._id }, { $set: { status: 'Tamper Alert', isTampered: true, 'pickupPass.attemptsRemaining': 0 }, $push: { events: lockEvt } });
-    } else if (result.parcel.pickupPass.attemptsRemaining < plain.pickupPass.attemptsRemaining) {
+      const evt = result.parcel.events[result.parcel.events.length - 1];
+      await Parcel.updateOne(
+        { _id: parcel._id },
+        { $set: { status: 'Collected', isTampered: false, 'pickupPass.isUsed': true }, $push: { events: evt } }
+      );
+    } else if (plain.pickupPass && nextAttempts === 0 && prevAttempts > 0) {
+      const lockEvt = result.parcel.events[result.parcel.events.length - 1];
+      await Parcel.updateOne(
+        { _id: parcel._id },
+        { $set: { status: 'Tamper Alert', isTampered: true, 'pickupPass.attemptsRemaining': 0 }, $push: { events: lockEvt } }
+      );
+    } else if (plain.pickupPass && nextAttempts < prevAttempts) {
       await Parcel.updateOne({ _id: parcel._id }, { $inc: { 'pickupPass.attemptsRemaining': -1 } });
     }
 
@@ -69,9 +125,30 @@ router.post('/:id/redirect', async (req, res, next) => {
   try {
     const parcel = await findParcelById(req.params.id);
     if (!parcel) return res.status(404).json({ message: 'Parcel not found' });
-    const { locationName, address } = req.body;
+    if (parcel.status === 'Collected') {
+      return res.status(400).json({ message: 'Collected parcels cannot be redirected' });
+    }
+
+    let locationName = (req.body.locationName || req.body.pickupPointName || '').trim();
+    let address = (req.body.address || '').trim();
+
+    if (!locationName && req.body.pickupPointId) {
+      const pt = await PickupPoint.findOne({ $or: [{ pointId: req.body.pickupPointId }, { id: req.body.pickupPointId }] });
+      if (pt) {
+        locationName = pt.name;
+        if (!address) address = pt.address;
+      }
+    }
+
+    if (!locationName) {
+      return res.status(400).json({ message: 'locationName is required to redirect a parcel' });
+    }
+
     const resRed = redirectParcel(parcel.toObject(), { name: locationName, address });
-    await Parcel.updateOne({ _id: parcel._id }, { $set: { status: 'Redirected', currentLocation: locationName }, $push: { events: resRed.events.slice(-1)[0] } });
+    await Parcel.updateOne(
+      { _id: parcel._id },
+      { $set: { status: 'Redirected', currentLocation: locationName }, $push: { events: resRed.events[resRed.events.length - 1] } }
+    );
     res.json(await findParcelById(req.params.id));
   } catch (err) { next(err); }
 });
@@ -81,18 +158,25 @@ router.post('/:id/report', async (req, res, next) => {
   try {
     const parcel = await findParcelById(req.params.id);
     if (!parcel) return res.status(404).json({ message: 'Parcel not found' });
+
     const { type, description } = req.body;
+    if (!type || !ALLOWED_REPORT_TYPES.includes(type)) {
+      return res.status(400).json({ message: `Invalid report type. Allowed: ${ALLOWED_REPORT_TYPES.join(', ')}` });
+    }
     if (!description || description.trim().length < 10) {
       return res.status(400).json({ message: 'Description must be at least 10 characters long' });
     }
+
     const resRep = addReport(parcel.toObject(), type, description);
-    await Parcel.updateOne({ _id: parcel._id }, { $push: { reports: resRep.reports.slice(-1)[0], events: resRep.events.slice(-1)[0] } });
+    await Parcel.updateOne(
+      { _id: parcel._id },
+      { $push: { reports: resRep.reports[resRep.reports.length - 1], events: resRep.events[resRep.events.length - 1] } }
+    );
     res.json(await findParcelById(req.params.id));
   } catch (err) { next(err); }
 });
 
-// POST /api/parcels/:id/pass/cancel (Module 6)
-router.post('/:id/pass/cancel', async (req, res, next) => {
+async function handleCancelPass(req, res, next) {
   try {
     const parcel = await findParcelById(req.params.id);
     if (!parcel) return res.status(404).json({ message: 'Parcel not found' });
@@ -110,6 +194,10 @@ router.post('/:id/pass/cancel', async (req, res, next) => {
     await Parcel.updateOne({ _id: parcel._id }, { $set: { pickupPass: null }, $push: { events: cancelEvt } });
     res.json({ success: true, parcel: await findParcelById(req.params.id) });
   } catch (err) { next(err); }
-});
+}
+
+// POST /api/parcels/:id/pass/cancel and DELETE /api/parcels/:id/pass alias
+router.post('/:id/pass/cancel', handleCancelPass);
+router.delete('/:id/pass', handleCancelPass);
 
 module.exports = router;

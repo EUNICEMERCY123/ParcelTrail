@@ -45,8 +45,7 @@ router.get('/mailbox/flash', async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-// POST /api/mailbox/flash/toggle
-router.post('/mailbox/flash/toggle', async (req, res, next) => {
+async function handleToggleFlash(req, res, next) {
   try {
     let box = await Mailbox.findOne();
     if (!box) box = await Mailbox.create({ flashOn: false });
@@ -54,6 +53,10 @@ router.post('/mailbox/flash/toggle', async (req, res, next) => {
     await box.save();
     res.json({ flashOn: box.flashOn });
   } catch (err) { next(err); }
-});
+}
+
+// POST /api/mailbox/flash/toggle and /api/mailbox/flash alias
+router.post('/mailbox/flash/toggle', handleToggleFlash);
+router.post('/mailbox/flash', handleToggleFlash);
 
 module.exports = router;

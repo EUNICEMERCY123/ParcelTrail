@@ -2,7 +2,7 @@
 import React, { useState, useRef } from 'react';
 import { reportProblem } from '../utils/api';
 
-function OptionsPanel({ parcel, onClose, onSimulate, flashOn, onToggleFlash, onDelete }) {
+function OptionsPanel({ parcel, onClose, onSimulate, onUpdateParcel, flashOn, onToggleFlash, onDelete }) {
   const audioRef = useRef(null);
   const [photoVisible, setPhotoVisible] = useState(false);
   const [issueType, setIssueType] = useState('Missing parcel');
@@ -24,6 +24,13 @@ function OptionsPanel({ parcel, onClose, onSimulate, flashOn, onToggleFlash, onD
     } catch (err) { setErrorMsg(err.message); }
   };
 
+  const handleToggleFlash = async () => {
+    setErrorMsg('');
+    try {
+      await onToggleFlash();
+    } catch (err) { setErrorMsg(err.message); }
+  };
+
   const handleReport = async (e) => {
     e.preventDefault();
     setErrorMsg('');
@@ -33,7 +40,8 @@ function OptionsPanel({ parcel, onClose, onSimulate, flashOn, onToggleFlash, onD
       return;
     }
     try {
-      await reportProblem(targetId, issueType, description.trim());
+      const updated = await reportProblem(targetId, issueType, description.trim());
+      if (onUpdateParcel) onUpdateParcel(updated);
       setReportMsg('Report recorded in MongoDB custody history.');
       setDescription('');
     } catch (err) { setErrorMsg(err.message); }
@@ -62,7 +70,7 @@ function OptionsPanel({ parcel, onClose, onSimulate, flashOn, onToggleFlash, onD
           <span className="btn-action-label">Take a photo</span>
           <span className="btn-action-hint">Simulated /photo command (ESP32-CAM)</span>
         </button>
-        <button type="button" className="btn-action-card" onClick={onToggleFlash}>
+        <button type="button" className="btn-action-card" onClick={handleToggleFlash}>
           <span className="btn-action-label">Flash on / off</span>
           <span className="btn-action-hint">Simulated /flash command, currently {flashOn ? 'ON' : 'OFF'}</span>
         </button>

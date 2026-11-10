@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "ParcelTrail API Collection",
-    "description": "Postman Collection for ParcelTrail Course Project API endpoints.",
+    "description": "Postman Collection for ParcelTrail Smart Mailbox API endpoints (matches Express routes in server/routes/*).",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -13,6 +13,21 @@
     {
       "key": "parcelId",
       "value": "PRCL-101",
+      "type": "string"
+    },
+    {
+      "key": "collectedParcelId",
+      "value": "PRCL-103",
+      "type": "string"
+    },
+    {
+      "key": "incidentParcelId",
+      "value": "PRCL-108",
+      "type": "string"
+    },
+    {
+      "key": "reportId",
+      "value": "REP-108-1",
       "type": "string"
     }
   ],
@@ -42,7 +57,7 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/parcels?search=phone&status=Locked",
+              "raw": "{{baseUrl}}/api/parcels?search=phone&status=Expected",
               "host": [
                 "{{baseUrl}}"
               ],
@@ -57,7 +72,7 @@
                 },
                 {
                   "key": "status",
-                  "value": "Locked"
+                  "value": "Expected"
                 }
               ]
             }
@@ -132,7 +147,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"itemDescription\": \"Desk Lamp\",\n  \"sender\": \"Amazon\",\n  \"trackingNumber\": \"TRK-9999\",\n  \"expectedDate\": \"2026-11-01\"\n}"
+              "raw": "{\n  \"itemDescription\": \"Desk Lamp\",\n  \"sender\": \"Amazon\",\n  \"trackingNumber\": \"TRK-99999-IN\",\n  \"expectedDate\": \"2026-12-01\"\n}"
             }
           }
         },
@@ -211,7 +226,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"action\": \"drop\"\n}"
+              "raw": "{\n  \"eventType\": \"drop\"\n}"
             }
           }
         },
@@ -251,12 +266,12 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"action\": \"lock\"\n}"
+              "raw": "{\n  \"eventType\": \"lock\"\n}"
             }
           }
         },
         {
-          "name": "Simulate action - Photo",
+          "name": "Simulate action - Snapshot",
           "event": [
             {
               "listen": "test",
@@ -291,7 +306,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"action\": \"photo\"\n}"
+              "raw": "{\n  \"eventType\": \"snapshot\"\n}"
             }
           }
         },
@@ -331,7 +346,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"action\": \"tamper\"\n}"
+              "raw": "{\n  \"eventType\": \"tamper\"\n}"
             }
           }
         },
@@ -371,7 +386,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"pickupPointId\": \"SP-01\",\n  \"pickupPointName\": \"Locker Station Alpha\"\n}"
+              "raw": "{\n  \"locationName\": \"Karunya Nagar Main Gatehouse\",\n  \"address\": \"Security Post 1, Karunya Nagar, Coimbatore - 641114\"\n}"
             }
           }
         },
@@ -411,12 +426,12 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"type\": \"Damage\",\n  \"description\": \"Package was dented during delivery.\"\n}"
+              "raw": "{\n  \"type\": \"Damaged Packaging\",\n  \"description\": \"Package was dented during delivery.\"\n}"
             }
           }
         },
         {
-          "name": "Delete parcel",
+          "name": "Delete collected parcel",
           "event": [
             {
               "listen": "test",
@@ -437,17 +452,18 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/parcels/{{parcelId}}",
+              "raw": "{{baseUrl}}/api/parcels/{{collectedParcelId}}",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
                 "parcels",
-                "{{parcelId}}"
+                "{{collectedParcelId}}"
               ],
               "query": []
-            }
+            },
+            "description": "Deletes a Collected parcel record (PRCL-103 is Collected in default seed data)."
           }
         }
       ]
@@ -477,7 +493,7 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/parcels/{{parcelId}}/pass",
+              "raw": "{{baseUrl}}/api/parcels/{{parcelId}}/pass/issue",
               "host": [
                 "{{baseUrl}}"
               ],
@@ -485,13 +501,14 @@
                 "api",
                 "parcels",
                 "{{parcelId}}",
-                "pass"
+                "pass",
+                "issue"
               ],
               "query": []
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"collectorName\": \"Meera\",\n  \"durationMinutes\": 30\n}"
+              "raw": "{\n  \"collectorName\": \"Meera\",\n  \"expiryMinutes\": 30\n}"
             }
           }
         },
@@ -532,7 +549,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"code\": \"123456\"\n}"
+              "raw": "{\n  \"inputCode\": \"123456\"\n}"
             }
           }
         },
@@ -550,7 +567,7 @@
             }
           ],
           "request": {
-            "method": "DELETE",
+            "method": "POST",
             "header": [
               {
                 "key": "Content-Type",
@@ -558,7 +575,7 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/parcels/{{parcelId}}/pass",
+              "raw": "{{baseUrl}}/api/parcels/{{parcelId}}/pass/cancel",
               "host": [
                 "{{baseUrl}}"
               ],
@@ -566,10 +583,12 @@
                 "api",
                 "parcels",
                 "{{parcelId}}",
-                "pass"
+                "pass",
+                "cancel"
               ],
               "query": []
-            }
+            },
+            "description": "Cancels an active unused pickup pass (DELETE /api/parcels/:id/pass alias is also supported)."
           }
         },
         {
@@ -748,21 +767,25 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/records/resolve",
+              "raw": "{{baseUrl}}/api/records/incidents/{{incidentParcelId}}/{{reportId}}/resolve",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
                 "records",
+                "incidents",
+                "{{incidentParcelId}}",
+                "{{reportId}}",
                 "resolve"
               ],
               "query": []
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"parcelId\": \"PRCL-104\",\n  \"reportId\": \"REP-101\",\n  \"resolutionNote\": \"Inspected and verified\"\n}"
-            }
+              "raw": "{\n  \"note\": \"Inspected and verified\"\n}"
+            },
+            "description": "Resolves an open incident report (POST /api/records/resolve alias is also supported)."
           }
         },
         {
@@ -924,7 +947,42 @@
           }
         },
         {
-          "name": "Mailbox flash LED command",
+          "name": "Get mailbox flash LED status",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status is 200\", function () { pm.response.to.have.status(200); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/mailbox/flash",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "mailbox",
+                "flash"
+              ],
+              "query": []
+            }
+          }
+        },
+        {
+          "name": "Toggle mailbox flash LED",
           "event": [
             {
               "listen": "test",
@@ -945,17 +1003,19 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/mailbox/flash",
+              "raw": "{{baseUrl}}/api/mailbox/flash/toggle",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
                 "mailbox",
-                "flash"
+                "flash",
+                "toggle"
               ],
               "query": []
-            }
+            },
+            "description": "Toggles camera flash LED state (POST /api/mailbox/flash alias is also supported)."
           }
         },
         {

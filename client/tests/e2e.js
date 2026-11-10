@@ -8,6 +8,8 @@ import { fileURLToPath } from 'node:url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const screenshotsDir = path.join(__dirname, 'screenshots');
+const BASE_URL = (process.env.E2E_BASE_URL || 'http://localhost:3000').replace(/\/+$/, '');
+const API_URL = (process.env.E2E_API_URL || 'http://localhost:5000/api').replace(/\/+$/, '');
 
 if (!fs.existsSync(screenshotsDir)) {
   fs.mkdirSync(screenshotsDir, { recursive: true });
@@ -24,7 +26,7 @@ async function verifyScrollContainment(browser, targetPath, pageName) {
   for (const vp of viewports) {
     const ctx = await browser.newContext({ viewport: vp });
     const p = await ctx.newPage();
-    await p.goto(`http://localhost:3000${targetPath}`);
+    await p.goto(`${BASE_URL}${targetPath}`);
     await p.waitForSelector('.parcels-scroll-area');
 
     // 1. Hover over left list and mouse wheel
@@ -113,7 +115,7 @@ async function runE2E() {
 
   // Reset database before tests
   console.log('[Setup] Resetting demo data on backend...');
-  const resetRes = await fetch('http://localhost:5000/api/parcels/reset', { method: 'POST' });
+  const resetRes = await fetch(`${API_URL}/parcels/reset`, { method: 'POST' });
   assert.strictEqual(resetRes.status, 200, 'Reset endpoint should return 200');
 
   let browser;
@@ -140,7 +142,7 @@ async function runE2E() {
   try {
     // 1. Home Page
     console.log('[Test 1] Testing Home page...');
-    await page.goto('http://localhost:3000/');
+    await page.goto(`${BASE_URL}/`);
     await page.waitForSelector('.hero-title');
     const heroTitle = await page.textContent('.hero-title');
     assert(heroTitle.includes('Know who touched your parcel'), 'Hero title text mismatch');
@@ -212,7 +214,7 @@ async function runE2E() {
 
     // 2. My Parcels List & Filters
     console.log('[Test 2] Testing My Parcels list & filters...');
-    await page.goto('http://localhost:3000/my-parcels');
+    await page.goto(`${BASE_URL}/my-parcels`);
     await page.waitForSelector('.parcel-card');
     const initialCards = await page.$$('.parcel-card');
     assert.strictEqual(initialCards.length, 12, 'Expected 12 initial parcels');
@@ -412,7 +414,7 @@ async function runE2E() {
 
     // 8. Pickup Spots Page
     console.log('[Test 8] Testing Pickup Spots page & satellite toggle...');
-    await page.goto('http://localhost:3000/pickup-points');
+    await page.goto(`${BASE_URL}/pickup-points`);
     await page.waitForSelector('.point-card');
     const spots = await page.$$('.point-card');
     assert.strictEqual(spots.length, 3, 'Expected 3 pickup spots');
@@ -455,7 +457,7 @@ async function runE2E() {
 
     // 9. Records Page
     console.log('[Test 9] Testing Records page (tabs, filters, CSV)...');
-    await page.goto('http://localhost:3000/records');
+    await page.goto(`${BASE_URL}/records`);
     await page.waitForSelector('.overview-strip');
     const overviewCards = await page.$$('.overview-card');
     assert.strictEqual(overviewCards.length, 4, 'Records page should display 4 overview cards');
@@ -477,7 +479,7 @@ async function runE2E() {
 
     // 10. Track Page (Vanilla JS)
     console.log('[Test 10] Testing Track page (Vanilla JS & localStorage)...');
-    await page.goto('http://localhost:3000/track.html');
+    await page.goto(`${BASE_URL}/track.html`);
     await page.waitForSelector('#tracking-input');
 
     // Bad format
@@ -505,7 +507,7 @@ async function runE2E() {
 
     // 11. Help Page (jQuery)
     console.log('[Test 11] Testing Help page (jQuery 3-step practice & hotspots)...');
-    await page.goto('http://localhost:3000/help.html');
+    await page.goto(`${BASE_URL}/help.html`);
     await page.waitForSelector('.practice-step-item');
 
     // Click step 2
@@ -546,28 +548,28 @@ async function runE2E() {
       await page.setViewportSize(vp);
 
       // Home
-      await page.goto('http://localhost:3000/');
+      await page.goto(`${BASE_URL}/`);
       await page.waitForSelector('.hero-title');
       let scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth);
       assert(scrollWidth <= vp.width, `Home page horizontal scroll at ${vp.width}x${vp.height}: ${scrollWidth} > ${vp.width}`);
       await page.screenshot({ path: path.join(screenshotsDir, `home-${vp.width}x${vp.height}.png`) });
 
       // My parcels
-      await page.goto('http://localhost:3000/my-parcels');
+      await page.goto(`${BASE_URL}/my-parcels`);
       await page.waitForSelector('.parcels-desktop-container');
       scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth);
       assert(scrollWidth <= vp.width, `My parcels horizontal scroll at ${vp.width}x${vp.height}: ${scrollWidth} > ${vp.width}`);
       await page.screenshot({ path: path.join(screenshotsDir, `my-parcels-${vp.width}x${vp.height}.png`) });
 
       // Pickup spots
-      await page.goto('http://localhost:3000/pickup-points');
+      await page.goto(`${BASE_URL}/pickup-points`);
       await page.waitForSelector('.point-card');
       scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth);
       assert(scrollWidth <= vp.width, `Pickup spots horizontal scroll at ${vp.width}x${vp.height}: ${scrollWidth} > ${vp.width}`);
       await page.screenshot({ path: path.join(screenshotsDir, `pickup-spots-${vp.width}x${vp.height}.png`) });
 
       // Records with 4 tabs
-      await page.goto('http://localhost:3000/records');
+      await page.goto(`${BASE_URL}/records`);
       await page.waitForSelector('.parcels-tab');
       scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth);
       assert(scrollWidth <= vp.width, `Records horizontal scroll at ${vp.width}x${vp.height}: ${scrollWidth} > ${vp.width}`);
@@ -586,14 +588,14 @@ async function runE2E() {
       await page.screenshot({ path: path.join(screenshotsDir, `records-activity-${vp.width}x${vp.height}.png`) });
 
       // Track
-      await page.goto('http://localhost:3000/track.html');
+      await page.goto(`${BASE_URL}/track.html`);
       await page.waitForSelector('#track-form');
       scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth);
       assert(scrollWidth <= vp.width, `Track page horizontal scroll at ${vp.width}x${vp.height}: ${scrollWidth} > ${vp.width}`);
       await page.screenshot({ path: path.join(screenshotsDir, `track-${vp.width}x${vp.height}.png`) });
 
       // Help
-      await page.goto('http://localhost:3000/help.html');
+      await page.goto(`${BASE_URL}/help.html`);
       await page.waitForSelector('.collect-steps-card');
       scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth);
       assert(scrollWidth <= vp.width, `Help page horizontal scroll at ${vp.width}x${vp.height}: ${scrollWidth} > ${vp.width}`);

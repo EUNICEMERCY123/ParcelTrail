@@ -17,7 +17,7 @@ export default function IncidentsTab({ onDataChanged }) {
       const data = await fetchRecordsIncidents(filters);
       setIncidents(data);
     } catch {
-      setError('Cannot reach the server. Start it with npm run dev inside the server folder.');
+      setError('Cannot reach the backend server. Please verify the API server is running.');
     } finally { setLoading(false); }
   };
 
@@ -41,12 +41,15 @@ export default function IncidentsTab({ onDataChanged }) {
           <option value="Open">Open</option>
           <option value="Resolved">Resolved</option>
         </select>
-        <select className="form-select form-select-sm" style={{ width: 180 }} value={filters.type} onChange={(e) => setFilters({ ...filters, type: e.target.value })}>
+        <select className="form-select form-select-sm" style={{ width: 200 }} value={filters.type} onChange={(e) => setFilters({ ...filters, type: e.target.value })}>
           <option value="">All types</option>
-          <option value="Tamper Alert">Tamper Alert</option>
-          <option value="Damage">Damage</option>
-          <option value="Late">Late</option>
-          <option value="Missing">Missing</option>
+          <option value="Tampered Lock">Tampered Lock</option>
+          <option value="Damaged Packaging">Damaged Packaging</option>
+          <option value="Missing parcel">Missing parcel</option>
+          <option value="Damaged">Damaged</option>
+          <option value="Suspicious activity">Suspicious activity</option>
+          <option value="Wrong Item">Wrong Item</option>
+          <option value="Other">Other</option>
         </select>
       </div>
 

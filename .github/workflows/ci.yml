@@ -1,0 +1,50 @@
+name: ParcelTrail CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-verify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: |
+            server/package-lock.json
+            client/package-lock.json
+
+      - name: Install backend dependencies
+        run: npm --prefix server ci
+
+      - name: Install frontend dependencies
+        run: npm --prefix client ci
+
+      - name: Check backend & script syntax
+        run: npm run lint:syntax
+
+      - name: Verify backend module imports and Express app setup
+        run: node -e "['./server/models/Parcel','./server/models/Mailbox','./server/models/PickupPoint','./server/middleware/activityLogger','./server/middleware/errorHandler','./server/rules/parcelRules','./server/rules/passRules','./server/utils/parcelQuery','./server/utils/passState','./server/utils/events','./server/utils/findParcel','./server/utils/corsOptions','./server/routes/parcelRoutes','./server/routes/parcelActionRoutes','./server/routes/recordsRoutes','./server/routes/recordsDetailRoutes','./server/routes/trackRoutes','./server/routes/otherRoutes'].forEach((m) => require(m)); console.log('All server modules loaded cleanly');"
+
+      - name: Run backend unit tests (no DB required)
+        run: npm --prefix server run test:unit
+
+      - name: Run frontend unit tests
+        run: npm --prefix client test
+
+      - name: Build frontend production bundle
+        run: npm --prefix client run build
+
+      - name: Verify build output and Postman collection JSON
+        run: |
+          test -f client/dist/index.html
+          node -e "JSON.parse(require('fs').readFileSync('postman/ParcelTrail.postman_collection.json', 'utf8')); console.log('Postman collection JSON valid');"

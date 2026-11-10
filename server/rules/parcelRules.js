@@ -46,6 +46,7 @@ function addReport(parcel, issueType, description) {
     type: issueType,
     issueType,
     description: (description || '').trim(),
+    status: 'Open',
     createdAt: new Date()
   };
   const evt = makeEvent('Security Concern Reported', 'Resident Portal', `Report filed: [${issueType}] "${(description || '').trim()}"`);

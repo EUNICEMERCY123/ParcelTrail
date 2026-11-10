@@ -1,10 +1,14 @@
 // Shared MongoDB filter builder for search, status, and createdAt dates (Module 5 MongoDB)
 
-function buildParcelFilter({ search, status, from, to }) {
+function escapeRegex(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function buildParcelFilter({ search, status, from, to } = {}) {
   const filter = {};
 
   if (search && search.trim()) {
-    const s = search.trim();
+    const s = escapeRegex(search.trim());
     const regex = new RegExp(s, 'i');
     filter.$or = [
       { itemDescription: { $regex: regex } },
@@ -22,12 +26,21 @@ function buildParcelFilter({ search, status, from, to }) {
   }
 
   if (from || to) {
-    filter.createdAt = {};
-    if (from) filter.createdAt.$gte = new Date(from);
-    if (to) filter.createdAt.$lte = new Date(to);
+    const dateRange = {};
+    if (from) {
+      const fromDate = new Date(from);
+      if (!isNaN(fromDate.getTime())) dateRange.$gte = fromDate;
+    }
+    if (to) {
+      const toDate = new Date(to);
+      if (!isNaN(toDate.getTime())) dateRange.$lte = toDate;
+    }
+    if (Object.keys(dateRange).length > 0) {
+      filter.createdAt = dateRange;
+    }
   }
 
   return filter;
 }
 
-module.exports = { buildParcelFilter };
+module.exports = { buildParcelFilter, escapeRegex };

@@ -21,7 +21,7 @@ export default function ActivityTab() {
       setPage(res.page || 1);
       setPages(res.pages || 1);
     } catch {
-      setError('Cannot reach the server. Start it with npm run dev inside the server folder.');
+      setError('Cannot reach the backend server. Please verify the API server is running.');
     } finally { setLoading(false); }
   };
 
